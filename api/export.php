@@ -32,9 +32,14 @@ require_once __DIR__ . '/../controllers/BudgetEngine.php';
 $type = $_GET['type'] ?? 'budget_vs_actual';
 $costCenterId = $_GET['cost_center'] ?? null;
 
+// Clean output buffer to prevent HTML contamination
+if (ob_get_length()) ob_end_clean();
+
 // Set headers for CSV download
 header('Content-Type: text/csv');
 header('Content-Disposition: attachment; filename="' . $type . '_' . date('Y-m-d') . '.csv"');
+header('Pragma: no-cache');
+header('Expires: 0');
 
 $output = fopen('php://output', 'w');
 
@@ -81,3 +86,4 @@ switch ($type) {
 }
 
 fclose($output);
+exit;

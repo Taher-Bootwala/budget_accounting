@@ -43,9 +43,9 @@ $pageTitle = $isEdit ? 'Edit Cost Center' : 'New Cost Center';
 include __DIR__ . '/../layouts/header.php';
 ?>
 
-<div class="page-header">
-    <h1 class="page-title"><?= $isEdit ? '✏️ Edit' : '➕ New' ?> Cost Center</h1>
-    <a href="/Furniture/views/cost_centers/index.php" class="btn btn-secondary">← Back</a>
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <h1><?= $isEdit ? 'Edit' : 'New' ?> Cost Center</h1>
+    <a href="/Furniture/views/cost_centers/index.php" class="btn btn-secondary">Back</a>
 </div>
 
 <div class="card" style="max-width: 600px;">

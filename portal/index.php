@@ -14,7 +14,7 @@ $userId = getCurrentUserId();
 
 // Security: Get contact ID
 $portalAccess = dbFetchOne("
-    SELECT pa.*, c.name as contact_name, c.id as contact_id
+    SELECT pa.*, c.name as contact_name, c.id as contact_id, c.type as contact_type
     FROM portal_access pa
     JOIN contacts c ON pa.contact_id = c.id
     WHERE pa.user_id = ?
@@ -34,31 +34,41 @@ $documents = dbFetchAll("
     ORDER BY d.created_at DESC
 ", [$contactId]);
 
-// Group by type
+// Group by type and status
 $grouped = [
     'invoices' => [],
-    'orders' => [], // SO + PO (Purchase Orders from Vendor perspective if allowed, or SOs placed by customer)
-    'bills' => []
+    'orders' => [], 
+    'bills' => [],
+    'pending' => [] // New group for action required
 ];
 
 foreach ($documents as $doc) {
+    // Action Required: POs pending vendor approval
+    if (($doc['doc_type'] === 'PO' || $doc['doc_type'] === 'PurchaseOrder') && $doc['status'] === 'pending_vendor') {
+        $grouped['pending'][] = $doc;
+    }
+
     if ($doc['doc_type'] === 'CustomerInvoice') {
         $grouped['invoices'][] = $doc;
-    } elseif ($doc['doc_type'] === 'SO' || $doc['doc_type'] === 'SalesOrder' || $doc['doc_type'] === 'PurchaseOrder') {
+    } elseif (in_array($doc['doc_type'], ['SO', 'SalesOrder', 'PO', 'PurchaseOrder'])) {
         $grouped['orders'][] = $doc;
     } elseif ($doc['doc_type'] === 'VendorBill') {
         $grouped['bills'][] = $doc;
     }
 }
 
-$pageTitle = 'Dashboard';
+$contactType = $portalAccess['contact_type'];
+$isVendor = ($contactType === 'vendor' || $contactType === 'both');
+$isCustomer = ($contactType === 'customer' || $contactType === 'both');
+
+$pageTitle = $isVendor ? 'Partner Portal' : 'Customer Portal';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $pageTitle ?> - Portal</title>
+    <title><?= $pageTitle ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="/Furniture/assets/css/style.css">
@@ -69,14 +79,14 @@ $pageTitle = 'Dashboard';
     <div class="fluid-background"></div>
 
     <div class="dashboard-frame" style="flex-direction: column;">
-        <!-- 1. Top Navigation Bar (Aligned) -->
+        <!-- 1. Top Navigation Bar -->
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 30px 40px; border-bottom: 1px solid rgba(255,255,255,0.2);">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="width: 40px; height: 40px; background: var(--text-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
-                    <i class="ri-user-star-line" style="font-size: 20px;"></i>
+                    <i class="<?= $isVendor ? 'ri-store-3-line' : 'ri-user-star-line' ?>" style="font-size: 20px;"></i>
                 </div>
                 <div>
-                    <h2 style="margin: 0; font-size: 18px; font-weight: 700; white-space: nowrap;">Customer Portal</h2>
+                    <h2 style="margin: 0; font-size: 18px; font-weight: 700; white-space: nowrap;"><?= $pageTitle ?></h2>
                     <div style="font-size: 13px; opacity: 0.7;">Furniture ERP</div>
                 </div>
             </div>
@@ -84,9 +94,17 @@ $pageTitle = 'Dashboard';
             <div style="display: flex; gap: 16px; align-items: center; margin-left: auto;">
                 <div style="text-align: right; margin-right: 12px; display: none; @media(min-width: 768px){display:block;}">
                     <div style="font-weight: 600; font-size: 14px;"><?= sanitize($portalAccess['contact_name']) ?></div>
-                    <div style="font-size: 12px; opacity: 0.7;">Client</div>
+                    <div style="font-size: 12px; opacity: 0.7;"><?= ucfirst($contactType) ?></div>
                 </div>
-                <a href="/Furniture/portal/products.php" class="btn btn-sm btn-primary" style="border-radius: 12px; background: linear-gradient(135deg, #8B5A2B, #5D3A1A); border: none;"><i class="ri-shopping-cart-2-line"></i> Place Order</a>
+                
+                <?php if ($isVendor): ?>
+                    <a href="/Furniture/portal/my_products.php" class="btn btn-sm btn-secondary" style="border-radius: 12px;"><i class="ri-store-2-line"></i> My Products</a>
+                <?php endif; ?>
+
+                <?php if ($isCustomer): ?>
+                    <a href="/Furniture/portal/products.php" class="btn btn-sm btn-primary" style="border-radius: 12px; background: linear-gradient(135deg, #8B5A2B, #5D3A1A); border: none;"><i class="ri-shopping-cart-2-line"></i> Place Order</a>
+                <?php endif; ?>
+
                 <a href="/Furniture/logout.php" class="btn btn-sm btn-secondary" style="border-radius: 12px;"><i class="ri-logout-box-r-line"></i> Logout</a>
             </div>
         </div>
@@ -98,75 +116,143 @@ $pageTitle = 'Dashboard';
                 <h1 style="font-size: 32px; margin-bottom: 8px;">Overview</h1>
                 <p class="text-secondary" style="margin-bottom: 32px;">Here is what's happening with your account today.</p>
 
+                <!-- Action Required (Vendors Only) -->
+                <?php if ($isVendor && !empty($grouped['pending'])): ?>
+                <div class="card" style="border: 1px solid var(--warning); background: #fffbf0; margin-bottom: 30px;">
+                    <div class="card-header" style="border-bottom-color: rgba(0,0,0,0.05);">
+                        <h3 class="card-title" style="color: var(--warning-dark); display: flex; align-items: center; gap: 8px;">
+                            <i class="ri-alert-line"></i> Action Required
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p>You have <strong><?= count($grouped['pending']) ?></strong> new purchase orders waiting for approval.</p>
+                        <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
+                            <?php foreach ($grouped['pending'] as $pDoc): ?>
+                                <a href="/Furniture/portal/view_document.php?id=<?= $pDoc['id'] ?>" class="btn btn-sm btn-primary" style="background: var(--warning); border: none;">
+                                    View Order #<?= $pDoc['id'] ?>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
                 <!-- Stats Grid -->
                 <?php
                     // Calculate totals on the fly
-                    $totalOutstanding = 0;
-                    $totalPaid = 0;
-                    $invCount = count($grouped['invoices']);
-                    foreach ($grouped['invoices'] as $inv) {
-                        $bal = $inv['total_amount'] - $inv['paid_amount'];
-                        if ($bal > 0) $totalOutstanding += $bal;
-                        $totalPaid += $inv['paid_amount'];
+                    $stats = [
+                        'outstanding' => 0,
+                        'paid' => 0,
+                        'invoices_count' => count($grouped['invoices']),
+                        'bills_count' => count($grouped['bills']),
+                        'pending_count' => count($grouped['pending'])
+                    ];
+                    
+                    if ($isCustomer) {
+                        foreach ($grouped['invoices'] as $inv) {
+                            if ($inv['status'] !== 'cancelled') {
+                                $stats['outstanding'] += ($inv['total_amount'] - $inv['paid_amount']);
+                                $stats['paid'] += $inv['paid_amount'];
+                            }
+                        }
+                    } elseif ($isVendor) {
+                        foreach ($grouped['bills'] as $bill) {
+                             if ($bill['status'] !== 'cancelled') {
+                                 // outstanding = Amount Admin owes vendor
+                                 $stats['outstanding'] += ($bill['total_amount'] - $bill['paid_amount']);
+                                 $stats['paid'] += $bill['paid_amount'];
+                             }
+                        }
                     }
                 ?>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 40px;">
-                    <!-- Card 1: Outstanding -->
-                    <div class="glass-widget" style="padding: 24px; display: flex; flex-direction: column; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: start;">
-                            <div class="text-secondary" style="font-size: 13px; font-weight: 600; text-transform: uppercase;">Outstanding Due</div>
-                            <div style="width: 32px; height: 32px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #991b1b;">
-                                <i class="ri-alert-line"></i>
-                            </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+                    
+                    <?php if ($isCustomer): ?>
+                    <!-- CUSTOMER STATS -->
+                    <div class="stat-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                            <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px; opacity: 0.6;">OUTSTANDING DUE</span>
+                            <div style="width: 24px; height: 24px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="ri-alert-fill" style="font-size: 14px;"></i></div>
                         </div>
-                        <div style="font-size: 32px; font-weight: 700; color: var(--text-primary);"><?= formatCurrency($totalOutstanding) ?></div>
-                        <div style="font-size: 13px; color: var(--text-secondary);">Total unpaid invoices</div>
+                        <h3 style="font-size: 28px; font-weight: 700; margin-bottom: 4px;"><?= formatCurrency($stats['outstanding']) ?></h3>
+                        <p style="font-size: 13px; opacity: 0.7; margin: 0;">Total unpaid invoices</p>
                     </div>
 
-                    <!-- Card 2: Total Paid -->
-                    <div class="glass-widget" style="padding: 24px; display: flex; flex-direction: column; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: start;">
-                            <div class="text-secondary" style="font-size: 13px; font-weight: 600; text-transform: uppercase;">Total Paid</div>
-                            <div style="width: 32px; height: 32px; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #166534;">
-                                <i class="ri-check-double-line"></i>
-                            </div>
+                    <div class="stat-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                            <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px; opacity: 0.6;">TOTAL PAID</span>
+                            <div style="width: 24px; height: 24px; background: rgba(34, 197, 94, 0.1); color: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="ri-check-double-line" style="font-size: 14px;"></i></div>
                         </div>
-                        <div style="font-size: 32px; font-weight: 700; color: var(--text-primary);"><?= formatCurrency($totalPaid) ?></div>
-                        <div style="font-size: 13px; color: var(--text-secondary);">Lifetime payments</div>
+                        <h3 style="font-size: 28px; font-weight: 700; margin-bottom: 4px;"><?= formatCurrency($stats['paid']) ?></h3>
+                        <p style="font-size: 13px; opacity: 0.7; margin: 0;">Lifetime payments</p>
                     </div>
 
-                    <!-- Card 3: Total Invoices -->
-                    <div class="glass-widget" style="padding: 24px; display: flex; flex-direction: column; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: start;">
-                            <div class="text-secondary" style="font-size: 13px; font-weight: 600; text-transform: uppercase;">Invoices</div>
-                            <div style="width: 32px; height: 32px; background: #e0f2fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #075985;">
-                                <i class="ri-file-list-3-line"></i>
-                            </div>
+                    <div class="stat-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                            <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px; opacity: 0.6;">INVOICES</span>
+                            <div style="width: 24px; height: 24px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="ri-file-list-3-line" style="font-size: 14px;"></i></div>
                         </div>
-                        <div style="font-size: 32px; font-weight: 700; color: var(--text-primary);"><?= $invCount ?></div>
-                        <div style="font-size: 13px; color: var(--text-secondary);">Total invoices generated</div>
+                        <h3 style="font-size: 28px; font-weight: 700; margin-bottom: 4px;"><?= $stats['invoices_count'] ?></h3>
+                        <p style="font-size: 13px; opacity: 0.7; margin: 0;">Total invoices generated</p>
                     </div>
+                    <?php endif; ?>
+
+                    <?php if ($isVendor): ?>
+                    <!-- VENDOR STATS -->
+                    <div class="stat-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                            <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px; opacity: 0.6;">TOTAL ORDERS</span>
+                            <div style="width: 24px; height: 24px; background: rgba(249, 115, 22, 0.1); color: #f97316; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="ri-shopping-bag-3-line" style="font-size: 14px;"></i></div>
+                        </div>
+                        <h3 style="font-size: 28px; font-weight: 700; margin-bottom: 4px;"><?= count($grouped['orders']) ?></h3>
+                        <p style="font-size: 13px; opacity: 0.7; margin: 0;">Lifetime orders received</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                            <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px; opacity: 0.6;">TOTAL EARNINGS</span>
+                             <div style="width: 24px; height: 24px; background: rgba(34, 197, 94, 0.1); color: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="ri-money-dollar-circle-line" style="font-size: 14px;"></i></div>
+                        </div>
+                         <!-- Total we have paid them -->
+                        <h3 style="font-size: 28px; font-weight: 700; margin-bottom: 4px;"><?= formatCurrency($stats['paid']) ?></h3>
+                        <p style="font-size: 13px; opacity: 0.7; margin: 0;">Total payments received</p>
+                    </div>
+                     
+                    <div class="stat-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                            <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px; opacity: 0.6;">BILLS</span>
+                            <div style="width: 24px; height: 24px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="ri-file-text-line" style="font-size: 14px;"></i></div>
+                        </div>
+                        <h3 style="font-size: 28px; font-weight: 700; margin-bottom: 4px;"><?= $stats['bills_count'] ?></h3>
+                        <p style="font-size: 13px; opacity: 0.7; margin: 0;">Total bills submitted</p>
+                    </div>
+                    <?php endif; ?>
+
                 </div>
             </div>
 
-            <!-- 3. Tabs & Content -->
-            <div class="tabs-container">
-                <button class="tab-btn active" onclick="openTab(event, 'tab-invoices')">
-                    <i class="ri-bill-line" style="margin-right: 6px;"></i> Invoices (<?= count($grouped['invoices']) ?>)
-                </button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-orders')">
-                    <i class="ri-shopping-cart-2-line" style="margin-right: 6px;"></i> Orders (<?= count($grouped['orders']) ?>)
-                </button>
-                <?php if(count($grouped['bills']) > 0): ?>
-                <button class="tab-btn" onclick="openTab(event, 'tab-bills')">Vendor Bills (<?= count($grouped['bills']) ?>)</button>
-                <?php endif; ?>
-            </div>
+            <!-- 3. Documents List -->
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <!-- Internal Filters -->
+                <div style="padding: 20px; border-bottom: 1px solid #eee; display: flex; gap: 16px;">
+                    <?php if ($isCustomer): ?>
+                        <button class="tab-btn active" onclick="switchTab('invoices')"><i class="ri-file-text-line"></i> Invoices (<?= count($grouped['invoices']) ?>)</button>
+                        <button class="tab-btn" onclick="switchTab('orders')"><i class="ri-shopping-cart-line"></i> Orders (<?= count($grouped['orders']) ?>)</button>
+                    <?php endif; ?>
+                    
+                    <?php if ($isVendor): ?>
+                         <button class="tab-btn active" onclick="switchTab('bills')"><i class="ri-bill-line"></i> My Bills (<?= count($grouped['bills']) ?>)</button>
+                         <button class="tab-btn" onclick="switchTab('orders')"><i class="ri-shopping-bag-3-line"></i> Orders Received (<?= count($grouped['orders']) ?>)</button>
+                    <?php endif; ?>
+                </div>
 
             <!-- INVOICES TAB -->
-            <div id="tab-invoices" class="tab-content active">
+            <div id="tab-invoices" class="tab-content <?= $isCustomer ? 'active' : '' ?>">
                 <div class="glass-widget">
+                    <!-- ... content ... -->
                     <div class="table-responsive">
                     <table style="margin: 0;">
+                        <!-- ... (keep existing content for invoices) ... -->
                         <thead>
                             <tr>
                                 <th style="padding-left: 24px;">Ref #</th>
@@ -182,8 +268,16 @@ $pageTitle = 'Dashboard';
                             <?php else: foreach($grouped['invoices'] as $inv): ?>
                             <?php 
                                 $bal = $inv['total_amount'] - $inv['paid_amount'];
-                                $statusClass = ($bal <= 0) ? 'badge-inv' : 'badge-bill';
-                                $statusText = ($bal <= 0) ? 'PAID' : 'DUE';
+                                $statusClass = 'badge-bill'; // Default Due
+                                $statusText = 'DUE';
+                                
+                                if ($bal <= 0) {
+                                    $statusClass = 'badge-inv'; // Paid
+                                    $statusText = 'PAID';
+                                } elseif ($inv['paid_amount'] > 0) {
+                                    $statusClass = 'badge-warning'; // Partial
+                                    $statusText = 'PARTIAL';
+                                }
                             ?>
                             <tr>
                                 <td style="padding-left: 24px;"><strong>#<?= str_pad($inv['id'], 4, '0', STR_PAD_LEFT) ?></strong></td>
@@ -206,6 +300,7 @@ $pageTitle = 'Dashboard';
 
             <!-- ORDERS TAB -->
             <div id="tab-orders" class="tab-content">
+                 <!-- ... (keep existing content) ... -->
                 <div class="glass-widget">
                     <div class="table-responsive">
                     <table style="margin: 0;">
@@ -239,13 +334,16 @@ $pageTitle = 'Dashboard';
                                         $statusLabel = ucfirst($orderStatus);
                                         if ($orderStatus === 'draft') {
                                             $statusClass = 'badge-warning';
-                                            $statusLabel = 'Pending Approval';
+                                            $statusLabel = 'Pending';
                                         } elseif ($orderStatus === 'posted') {
                                             $statusClass = 'badge-success';
                                             $statusLabel = 'Approved';
                                         } elseif ($orderStatus === 'cancelled') {
                                             $statusClass = 'badge-danger';
                                             $statusLabel = 'Rejected';
+                                        } elseif ($orderStatus === 'pending_vendor') {
+                                            $statusClass = 'badge-warning';
+                                            $statusLabel = $isVendor ? 'Action Required' : 'Pending Vendor';
                                         }
                                     ?>
                                     <span class="badge <?= $statusClass ?>"><?= $statusLabel ?></span>
@@ -261,8 +359,8 @@ $pageTitle = 'Dashboard';
                 </div>
             </div>
 
-            <!-- BILLS TAB -->
-            <div id="tab-bills" class="tab-content">
+            <!-- BILLS TAB (Visible Default for Vendor) -->
+            <div id="tab-bills" class="tab-content <?= $isVendor ? 'active' : '' ?>">
                 <div class="glass-widget">
                     <div class="table-responsive">
                     <table style="margin: 0;">
@@ -276,7 +374,9 @@ $pageTitle = 'Dashboard';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach($grouped['bills'] as $bill): ?>
+                            <?php if(empty($grouped['bills'])): ?>
+                                <tr><td colspan="5" style="text-align:center; padding: 40px; color: var(--text-secondary);">No bills found.</td></tr>
+                            <?php else: foreach($grouped['bills'] as $bill): ?>
                             <tr>
                                 <td style="padding-left: 24px;"><strong>#<?= str_pad($bill['id'], 4, '0', STR_PAD_LEFT) ?></strong></td>
                                 <td><?= formatDate($bill['created_at']) ?></td>
@@ -286,7 +386,7 @@ $pageTitle = 'Dashboard';
                                     <a href="view_document.php?id=<?= $bill['id'] ?>" class="btn btn-sm btn-secondary">View</a>
                                 </td>
                             </tr>
-                            <?php endforeach; ?>
+                            <?php endforeach; endif; ?>
                         </tbody>
                     </table>
                     </div>
@@ -297,25 +397,33 @@ $pageTitle = 'Dashboard';
     </div>
 
     <script>
-    function openTab(evt, tabName) {
+    function switchTab(tabName) {
+        // Tab name maps to ID: invoices -> tab-invoices
+        const targetId = 'tab-' + tabName;
+        
         // Hide all tab content
-        var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
+        const tabcontent = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < tabcontent.length; i++) {
             tabcontent[i].classList.remove("active");
         }
 
         // Remove active class from buttons
-        tablinks = document.getElementsByClassName("tab-btn");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        const tablinks = document.getElementsByClassName("tab-btn");
+        for (let i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
         }
 
         // Show current tab and add active class
-        document.getElementById(tabName).style.display = "block";
-        setTimeout(() => document.getElementById(tabName).classList.add("active"), 10);
-        evt.currentTarget.className += " active";
+        const target = document.getElementById(targetId);
+        if (target) {
+            target.classList.add("active");
+        }
+        
+        // Add active class to clicked button (or find it if called programmatically)
+        // Since this is inline onclick, event.target is easiest but let's be safe
+        if (event && event.currentTarget) {
+             event.currentTarget.classList.add("active");
+        }
     }
     </script>
 </body>

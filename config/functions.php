@@ -170,11 +170,11 @@ function calculatePercentage($part, $whole)
 function getBudgetHealth($percentage)
 {
     if ($percentage < 70) {
-        return ['status' => 'Healthy', 'color' => 'success', 'icon' => '🟢'];
+        return ['status' => 'Healthy', 'color' => 'success', 'icon' => ''];
     } elseif ($percentage <= 90) {
-        return ['status' => 'Warning', 'color' => 'warning', 'icon' => '🟡'];
+        return ['status' => 'Warning', 'color' => 'warning', 'icon' => ''];
     } else {
-        return ['status' => 'Critical', 'color' => 'danger', 'icon' => '🔴'];
+        return ['status' => 'Critical', 'color' => 'danger', 'icon' => ''];
     }
 }
 

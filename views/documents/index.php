@@ -57,8 +57,16 @@ include __DIR__ . '/../layouts/header.php';
         <a href="?type=sales" class="btn <?= $type === 'sales' ? 'btn-primary' : 'btn-secondary' ?> btn-sm">Sales</a>
     </div>
     <div style="display: flex; gap: 8px;">
-        <a href="/Furniture/views/documents/create.php?type=SO" class="btn btn-secondary">+ Sales Order</a>
-        <a href="/Furniture/views/documents/create.php?type=CustomerInvoice" class="btn btn-primary">+ Invoice</a>
+        <?php if ($type === 'purchases'): ?>
+            <a href="/Furniture/views/documents/create.php?type=PO" class="btn btn-secondary">+ Purchase Order</a>
+            <a href="/Furniture/views/documents/create.php?type=VendorBill" class="btn btn-primary">+ Vendor Bill</a>
+        <?php elseif ($type === 'sales'): ?>
+            <a href="/Furniture/views/documents/create.php?type=SO" class="btn btn-secondary">+ Sales Order</a>
+            <a href="/Furniture/views/documents/create.php?type=CustomerInvoice" class="btn btn-primary">+ Invoice</a>
+        <?php else: ?>
+            <a href="/Furniture/views/documents/create.php?type=PO" class="btn btn-secondary">+ Purchase Order</a>
+            <a href="/Furniture/views/documents/create.php?type=SO" class="btn btn-primary">+ Sales Order</a>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -110,15 +118,19 @@ include __DIR__ . '/../layouts/header.php';
                             <a href="/Furniture/views/documents/view.php?id=<?= $doc['id'] ?>" class="btn btn-secondary btn-sm">View</a>
                             
                             <?php if ($doc['status'] === 'draft'): ?>
-                                <a href="?post=<?= $doc['id'] ?>" class="btn btn-success btn-sm" 
+                                <a href="?post=<?= $doc['id'] ?>" class="btn btn-primary btn-sm" 
                                    onclick="return confirm('Post this document?')">Post</a>
                             <?php endif; ?>
                             
-                            <?php if ($doc['status'] === 'posted' && $doc['doc_type'] === 'CustomerInvoice' && $doc['payment_status'] !== 'paid'): ?>
+                            <?php if ($doc['status'] === 'posted' && $doc['doc_type'] === 'VendorBill' && $doc['payment_status'] !== 'paid'): ?>
                                 <button class="btn btn-primary btn-sm" 
                                         onclick="initiatePayment(<?= $doc['id'] ?>, <?= $doc['total_amount'] - ($doc['paid_amount'] ?? 0) ?>)">
-                                    Pay Now
+                                    Pay Vendor
                                 </button>
+                            <?php endif; ?>
+
+                            <?php if ($doc['status'] === 'pending_vendor'): ?>
+                                <span class="badge badge-warning">Pending Vendor Approval</span>
                             <?php endif; ?>
                         </td>
                     </tr>

@@ -38,8 +38,12 @@ class ProductController
      * 
      * @return array Array of product records
      */
-    public static function getAll()
+    public static function getAll($type = null)
     {
+        if ($type) {
+            // 'both' products should appear in both lists
+            return dbFetchAll("SELECT * FROM products WHERE type IN (?, 'both') ORDER BY name", [$type]);
+        }
         return dbFetchAll("SELECT * FROM products ORDER BY name");
     }
 

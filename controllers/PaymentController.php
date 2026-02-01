@@ -88,15 +88,24 @@ class PaymentController
      */
     public static function create($data)
     {
-        $sql = "INSERT INTO payments (document_id, paid_amount, payment_method, razorpay_payment_id, payment_date) 
-                VALUES (?, ?, ?, ?, ?)";
-        return dbInsert($sql, [
+        $id = dbInsert("INSERT INTO payments (document_id, paid_amount, payment_method, razorpay_payment_id, payment_date) VALUES (?, ?, ?, ?, ?)", [
             $data['document_id'],
             $data['paid_amount'],
             $data['payment_method'] ?? 'other',
             $data['razorpay_payment_id'] ?? null,
             $data['payment_date'] ?? date('Y-m-d')
         ]);
+
+        // Auto-update document status
+        $totalPaid = self::getTotalPaidForDocument($data['document_id']);
+        $doc = dbFetchOne("SELECT total_amount FROM documents WHERE id = ?", [$data['document_id']]);
+        
+        if ($doc) {
+            $newStatus = ($totalPaid >= $doc['total_amount']) ? 'paid' : 'partial';
+            dbExecute("UPDATE documents SET status = ? WHERE id = ?", [$newStatus, $data['document_id']]);
+        }
+
+        return $id;
     }
 
     /**

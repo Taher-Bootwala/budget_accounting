@@ -15,12 +15,18 @@
         </div>
 
         <div style="margin-bottom: 24px; text-align: center;">
-            <div style="font-size: 32px; font-weight: 700; color: var(--text-main);" id="payAmount">₹0.00</div>
+            <label style="display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Enter Amount to Pay</label>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                <span style="font-size: 24px; font-weight: 600; color: var(--text-primary);">₹</span>
+                <input type="number" step="0.01" id="payAmountInput" name="amount" 
+                    style="font-size: 32px; font-weight: 700; color: var(--text-main); border: none; border-bottom: 2px solid var(--primary); width: 180px; text-align: center; outline: none; background: transparent;"
+                    placeholder="0.00">
+            </div>
         </div>
 
         <form id="paymentForm" onsubmit="processPayment(event)">
             <input type="hidden" id="payDocId" name="document_id">
-            <input type="hidden" id="payAmountInput" name="amount">
+            <!-- Removed hidden input since we now use the visible one above -->
 
             <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">
                 Pay Now

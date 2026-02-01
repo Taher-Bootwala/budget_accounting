@@ -1,0 +1,53 @@
+2026-02-01 04:40:00 - Request Started
+2026-02-01 04:40:00 - Loading dependencies...
+2026-02-01 04:40:00 - Dependencies loaded.
+2026-02-01 04:40:00 - User ID: 6
+2026-02-01 04:40:00 - Input: Array
+(
+    [document_id] => 9
+    [amount] => 800
+    [method] => upi
+)
+
+2026-02-01 04:40:00 - Verifying access for Doc ID: 9
+2026-02-01 04:40:00 - Creating payment record...
+FATAL ERROR: Array
+(
+    [type] => 1
+    [message] => Uncaught Error: Call to undefined function dbUpdate() in C:\xampp\htdocs\Furniture\controllers\PaymentController.php:105
+Stack trace:
+#0 C:\xampp\htdocs\Furniture\api\process_payment.php(82): PaymentController::create(Array)
+#1 {main}
+  thrown
+    [file] => C:\xampp\htdocs\Furniture\controllers\PaymentController.php
+    [line] => 105
+)
+
+2026-02-01 04:42:07 - Request Started
+2026-02-01 04:42:07 - Loading dependencies...
+2026-02-01 04:42:07 - Dependencies loaded.
+2026-02-01 04:42:07 - User ID: 6
+2026-02-01 04:42:07 - Input: Array
+(
+    [document_id] => 9
+    [amount] => 300
+    [method] => upi
+)
+
+2026-02-01 04:42:07 - Verifying access for Doc ID: 9
+2026-02-01 04:42:07 - Creating payment record...
+2026-02-01 04:42:07 - Payment Success. ID: 11
+2026-02-01 04:42:15 - Request Started
+2026-02-01 04:42:15 - Loading dependencies...
+2026-02-01 04:42:15 - Dependencies loaded.
+2026-02-01 04:42:15 - User ID: 6
+2026-02-01 04:42:15 - Input: Array
+(
+    [document_id] => 9
+    [amount] => 7000
+    [method] => card
+)
+
+2026-02-01 04:42:15 - Verifying access for Doc ID: 9
+2026-02-01 04:42:15 - Creating payment record...
+2026-02-01 04:42:15 - Payment Success. ID: 12

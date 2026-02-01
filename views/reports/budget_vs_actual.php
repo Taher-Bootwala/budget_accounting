@@ -18,9 +18,12 @@ $pageTitle = 'Budget vs Actual Report';
 include __DIR__ . '/../layouts/header.php';
 ?>
 
-<div class="page-header">
-    <h1 class="page-title">Budget vs Actual Report</h1>
-    <button class="btn btn-secondary" onclick="exportReport('budget_vs_actual')">📥 Export CSV</button>
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1>Budget vs Actual Report</h1>
+        <p style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">Compare budgeted amounts with actual spending</p>
+    </div>
+    <button class="btn btn-secondary" data-export="budget_vs_actual">Export CSV</button>
 </div>
 
 <!-- Stats Row -->

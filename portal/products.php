@@ -11,8 +11,9 @@ require_once __DIR__ . '/../config/functions.php';
 requirePortal();
 
 $userId = getCurrentUserId();
+// Security: Get contact ID
 $portalAccess = dbFetchOne("
-    SELECT pa.*, c.name as contact_name, c.id as contact_id
+    SELECT pa.*, c.name as contact_name, c.id as contact_id, c.type as contact_type
     FROM portal_access pa
     JOIN contacts c ON pa.contact_id = c.id
     WHERE pa.user_id = ?
@@ -20,6 +21,12 @@ $portalAccess = dbFetchOne("
 
 if (!$portalAccess) {
     die("Portal access not configured.");
+}
+
+// Enforce Customer Role
+if ($portalAccess['contact_type'] !== 'customer' && $portalAccess['contact_type'] !== 'both') {
+    setFlash('error', 'Access denied: Customer privileges required.');
+    redirect('/Furniture/portal/index.php');
 }
 
 // Get all products

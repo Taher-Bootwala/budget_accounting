@@ -112,8 +112,18 @@ include __DIR__ . '/views/layouts/header.php';
 <div class="page-header anim-fade-up">
     <div
         style="font-size: 12px; color: var(--text-secondary); opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
-        Updated <?= date('M d, Y') ?> at <?= date('h:i A') ?>
+        Updated <span id="liveClock"><?= date('M d, Y') ?> at <?= date('h:i A') ?></span>
     </div>
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const options = { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
+            const timeString = now.toLocaleDateString('en-US', options).replace(',', ' at');
+            document.getElementById('liveClock').textContent = timeString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
     <h1>Overview Panel</h1>
 </div>
 
@@ -196,86 +206,43 @@ include __DIR__ . '/views/layouts/header.php';
                     </div>
                     <div style="height: 50px; margin-top: 8px;"><canvas id="miniChart2"></canvas></div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Bottom Row: AI Command Center -->
-        <div class="glass-widget anim-fade-up delay-3"
-            style="min-height: 140px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: visible; padding: 32px;">
-
-            <!-- Floating Label -->
-            <div
-                style="position: absolute; top: -12px; left: 32px; background: linear-gradient(135deg, #D4A574, #A1887F); padding: 5px 16px; border-radius: 20px; color: white; font-size: 11px; font-weight: 700; box-shadow: 0 4px 12px rgba(161, 136, 127, 0.4); letter-spacing: 0.5px;">
-                <i class="ri-sparkling-fill" style="margin-right: 4px;"></i> INTELLIGENCE HUB
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 40px;">
-
-                <!-- Approvals (Left) -->
-                <div style="min-width: 180px;">
-                    <?php
-                    require_once __DIR__ . '/controllers/DocumentController.php';
-                    $pendingCount = DocumentController::getPendingApprovalsCount();
-                    ?>
-                    <div
-                        style="font-size: 12px; font-weight: 700; color: var(--accent-wood); margin-bottom: 4px; letter-spacing: 0.5px; text-transform: uppercase;">
-                        Action Items</div>
-                    <div style="display: flex; align-items: center; gap: 14px;">
-                        <div
-                            style="font-size: 48px; font-weight: 700; line-height: 1; letter-spacing: -2px; color: var(--text-primary);">
-                            <?= $pendingCount ?>
-                        </div>
-                        <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.4;">
-                            Documents<br>Pending
-                        </div>
+                <!-- Quick Actions (New Widget to fill space) -->
+                <div class="glass-widget anim-fade-up delay-2" style="flex: 1; min-height: 120px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <span style="font-weight: 600; font-size: 13px;">Quick Access</span>
                     </div>
-                </div>
-
-                <!-- AI Search Input (Right) -->
-                <div style="flex: 1;">
-                    <!-- Suggested Prompts -->
-                    <div style="display: flex; gap: 10px; margin-bottom: 14px; justify-content: flex-end;">
-                        <span
-                            style="font-size: 11px; font-weight: 600; color: var(--text-light); align-self: center; margin-right: 4px;">Try
-                            asking:</span>
-                        <button type="button" onclick="window.performSearch('Show me spending this week')"
-                            style="font-size: 11px; padding: 6px 14px; background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); border-radius: 20px; color: var(--text-secondary); cursor: pointer; transition: 0.2s;">
-                            "Spending trend?"</button>
-                        <button type="button" onclick="window.performSearch('Where can we cut costs?')"
-                            style="font-size: 11px; padding: 6px 14px; background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); border-radius: 20px; color: var(--text-secondary); cursor: pointer; transition: 0.2s;">
-                            "Cut costs?"</button>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; text-align: center;">
+                        <a href="/Furniture/views/users/create.php" style="text-decoration: none; color: var(--text-primary);">
+                            <div style="background: rgba(0,0,0,0.03); padding: 12px; border-radius: 12px; margin-bottom: 8px; transition: all 0.2s;">
+                                <i class="ri-user-add-line" style="font-size: 20px;"></i>
+                            </div>
+                            <span style="font-size: 11px;">User</span>
+                        </a>
+                        <a href="/Furniture/views/products/form.php" style="text-decoration: none; color: var(--text-primary);">
+                            <div style="background: rgba(0,0,0,0.03); padding: 12px; border-radius: 12px; margin-bottom: 8px; transition: all 0.2s;">
+                                <i class="ri-box-3-line" style="font-size: 20px;"></i>
+                            </div>
+                            <span style="font-size: 11px;">Product</span>
+                        </a>
+                        <a href="/Furniture/views/cost_centers/form.php" style="text-decoration: none; color: var(--text-primary);">
+                            <div style="background: rgba(0,0,0,0.03); padding: 12px; border-radius: 12px; margin-bottom: 8px; transition: all 0.2s;">
+                                <i class="ri-building-line" style="font-size: 20px;"></i>
+                            </div>
+                            <span style="font-size: 11px;">Center</span>
+                        </a>
+                        <a href="/Furniture/views/contacts/index.php" style="text-decoration: none; color: var(--text-primary);">
+                            <div style="background: rgba(0,0,0,0.03); padding: 12px; border-radius: 12px; margin-bottom: 8px; transition: all 0.2s;">
+                                <i class="ri-contacts-book-line" style="font-size: 20px;"></i>
+                            </div>
+                            <span style="font-size: 11px;">Contact</span>
+                        </a>
                     </div>
-
-                    <div class="ai-input-wrapper"
-                        style="padding: 14px 24px; background: white; border: 1px solid rgba(139, 90, 43, 0.1); border-radius: 20px; display: flex; align-items: center; gap: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                        <i class="ri-search-2-line"
-                            style="font-size: 20px; color: var(--accent-wood); opacity: 0.7;"></i>
-                        <input type="text" id="globalSearchInput"
-                            placeholder="Ask Grok to analyze budgets, find invoices, or check trends..."
-                            style="background: transparent; border: none; outline: none; flex: 1; font-size: 15px; color: var(--text-primary); font-family: 'Inter', sans-serif;">
-                        <button type="button" id="aiSearchBtn"
-                            style="background: var(--accent-wood); width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(139, 90, 43, 0.2); border: none;">
-                            <i class="ri-arrow-right-line" style="color: white; font-size: 18px;"></i>
-                        </button>
-                    </div>
-                    <script>
-                        document.getElementById('aiSearchBtn').addEventListener('click', function () {
-                            var query = document.getElementById('globalSearchInput').value;
-                            console.log('Search button clicked, query:', query);
-                            window.performSearch(query);
-                        });
-                        document.getElementById('globalSearchInput').addEventListener('keypress', function (e) {
-                            if (e.key === 'Enter') {
-                                console.log('Enter pressed, query:', this.value);
-                                window.performSearch(this.value);
-                            }
-                        });
-                    </script>
                 </div>
             </div>
         </div>
 
-    </div>
+        </div>
 
     <!-- RIGHT SECTION (Phone Widget) -->
     <div style="display: flex; flex-direction: column; gap: 24px;" class="anim-fade-up delay-1">
@@ -388,6 +355,53 @@ include __DIR__ . '/views/layouts/header.php';
             </div>
         </div>
 
+    </div>
+</div>
+
+<!-- Bottom Row: Cost Center Health (Full Width) -->
+<div class="glass-widget anim-fade-up delay-3" style="padding: 24px; margin-bottom: 40px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="background: rgba(139, 90, 43, 0.1); padding: 8px; border-radius: 8px; color: var(--accent-wood);">
+                <i class="ri-heart-pulse-line"></i>
+            </div>
+            <span style="font-weight: 600; font-size: 15px;">Budget Health</span>
+        </div>
+        <a href="/Furniture/views/cost_centers/index.php" style="font-size: 12px; color: var(--accent-wood); text-decoration: none; font-weight: 500;">View All →</a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+        <?php
+        require_once __DIR__ . '/controllers/CostCenterController.php';
+        $dbCostCenters = CostCenterController::getAllWithBudgetInfo();
+        // Show top 6
+        $dbCostCenters = array_slice($dbCostCenters, 0, 6);
+        
+        foreach ($dbCostCenters as $cc): 
+            if ($cc['budget_amount'] > 0):
+        ?>
+        <div style="border: 1px solid rgba(0,0,0,0.05); border-radius: 12px; padding: 16px; background: rgba(255,255,255,0.4);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                <span style="font-size: 13px; font-weight: 600;"><?= sanitize($cc['name']) ?></span>
+                <span class="badge badge-<?= $cc['health']['color'] ?>" style="font-size: 10px;"><?= $cc['health']['status'] ?></span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; color: var(--text-secondary);">
+                <span><?= formatCurrency($cc['actual_spend']) ?></span>
+                <span><?= $cc['utilization'] ?>%</span>
+            </div>
+            
+            <div class="progress-bar-container" style="height: 6px;">
+                <div class="progress-bar <?= $cc['health']['color'] ?>" style="width: <?= min($cc['utilization'], 100) ?>%"></div>
+            </div>
+        </div>
+        <?php endif; endforeach; ?>
+        
+        <?php if (empty($dbCostCenters)): ?>
+            <div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: var(--text-secondary); font-size: 13px;">
+                No active budgets found. <a href="/Furniture/views/budgets/form.php" style="color: var(--accent-wood);">Create one now</a>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 

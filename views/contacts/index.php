@@ -201,7 +201,7 @@ include __DIR__ . '/../layouts/header.php';
 
 .filter-tabs {
     display: flex;
-    gap: 8px;
+    gap: 16px;
 }
 
 .filter-tab {
@@ -698,41 +698,37 @@ include __DIR__ . '/../layouts/header.php';
 }
 </style>
 
-<div class="page-header anim-fade-up" style="display: flex; justify-content: space-between; align-items: center;">
+<div class="page-header anim-fade-up" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
     <div>
-        <h1>Contacts</h1>
-        <p style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">Manage customers and vendors</p>
-    </div>
-    <button class="btn btn-primary" onclick="openModal()">
-        + New Contact
-    </button>
-</div>
-
-<div class="master-container">
-
-    <!-- Filter Section -->
-    <div class="filter-section anim-fade-up delay-1">
+        <h1 style="margin-bottom: 8px;">Contacts</h1>
         <div class="filter-tabs">
             <a href="?tab=active&type=<?= $typeFilter ?>" class="filter-tab <?= $activeTab === 'active' ? 'active' : '' ?>">
-                <i class="ri-checkbox-circle-line"></i> Active
+                Active
             </a>
             <a href="?tab=archived&type=<?= $typeFilter ?>" class="filter-tab <?= $activeTab === 'archived' ? 'active' : '' ?>">
-                <i class="ri-archive-line"></i> Archived
+                Archived
             </a>
         </div>
-        
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 12px;">
+        <button class="btn btn-primary" onclick="openModal()">
+            + New Contact
+        </button>
         <div class="type-pills">
             <a href="?tab=<?= $activeTab ?>&type=all" class="type-pill <?= $typeFilter === 'all' ? 'active' : '' ?>">
                 All
             </a>
             <a href="?tab=<?= $activeTab ?>&type=customer" class="type-pill customer <?= $typeFilter === 'customer' ? 'active' : '' ?>">
-                <i class="ri-user-heart-line"></i> Customers (<?= $customerCount ?>)
+                Customers (<?= $customerCount ?>)
             </a>
             <a href="?tab=<?= $activeTab ?>&type=vendor" class="type-pill vendor <?= $typeFilter === 'vendor' ? 'active' : '' ?>">
-                <i class="ri-store-2-line"></i> Vendors (<?= $vendorCount ?>)
+                Vendors (<?= $vendorCount ?>)
             </a>
         </div>
     </div>
+</div>
+
+<div class="master-container">
 
     <!-- List Card -->
     <div class="list-card">

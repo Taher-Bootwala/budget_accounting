@@ -537,10 +537,17 @@ include __DIR__ . '/../layouts/header.php';
 }
 </style>
 
-<div class="page-header anim-fade-up" style="display: flex; justify-content: space-between; align-items: center;">
+<div class="page-header anim-fade-up" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
     <div>
-        <h1>Products</h1>
-        <p style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">Manage your product catalog</p>
+        <h1 style="margin-bottom: 8px;">Products</h1>
+        <div class="filter-tabs">
+            <a href="?tab=active" class="filter-tab <?= $activeTab === 'active' ? 'active' : '' ?>">
+                Active <?= count($activeTab === 'active' ? $products : []) ? '(' . count($products) . ')' : '' ?>
+            </a>
+            <a href="?tab=archived" class="filter-tab <?= $activeTab === 'archived' ? 'active' : '' ?>">
+                Archived
+            </a>
+        </div>
     </div>
     <button class="btn btn-primary" onclick="openModal()">
         + New Product
@@ -548,17 +555,6 @@ include __DIR__ . '/../layouts/header.php';
 </div>
 
 <div class="master-container">
-
-    <!-- Filter Tabs -->
-    <div class="filter-tabs anim-fade-up delay-1">
-        <a href="?tab=active" class="filter-tab <?= $activeTab === 'active' ? 'active' : '' ?>">
-            <i class="ri-checkbox-circle-line"></i> Active
-            <span class="count"><?= count($activeTab === 'active' ? $products : []) ?: '' ?></span>
-        </a>
-        <a href="?tab=archived" class="filter-tab <?= $activeTab === 'archived' ? 'active' : '' ?>">
-            <i class="ri-archive-line"></i> Archived
-        </a>
-    </div>
 
     <!-- List Card -->
     <div class="list-card">

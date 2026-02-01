@@ -4,7 +4,7 @@
  */
 
 // Global Search Functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initGlobalSearch();
     initModals();
     initCostCenterPreview();
@@ -18,39 +18,39 @@ document.addEventListener('DOMContentLoaded', function() {
 function initGlobalSearch() {
     const searchInput = document.getElementById('globalSearchInput');
     const searchResults = document.getElementById('searchResults');
-    
+
     if (!searchInput) return;
-    
+
     // Keyboard shortcut Ctrl+K
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
             e.preventDefault();
             searchInput.focus();
         }
-        
+
         // Escape to close
         if (e.key === 'Escape' && searchResults) {
             searchResults.classList.remove('active');
             searchInput.blur();
         }
     });
-    
+
     // Search input handler with debounce
     let searchTimeout;
-    searchInput.addEventListener('input', function() {
+    searchInput.addEventListener('input', function () {
         clearTimeout(searchTimeout);
         const query = this.value.trim();
-        
+
         if (query.length < 2) {
             if (searchResults) searchResults.classList.remove('active');
             return;
         }
-        
+
         searchTimeout = setTimeout(() => performSearch(query), 300);
     });
-    
+
     // Close results when clicking outside
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (!searchInput.contains(e.target) && searchResults && !searchResults.contains(e.target)) {
             searchResults.classList.remove('active');
         }
@@ -63,11 +63,11 @@ function initGlobalSearch() {
 async function performSearch(query) {
     const searchResults = document.getElementById('searchResults');
     if (!searchResults) return;
-    
+
     try {
         const response = await fetch(`/Furniture/api/search.php?q=${encodeURIComponent(query)}`);
         const data = await response.json();
-        
+
         if (data.results && data.results.length > 0) {
             searchResults.innerHTML = data.results.map(item => `
                 <a href="${item.url}" class="search-result-item">
@@ -101,23 +101,23 @@ async function performSearch(query) {
 function initModals() {
     // Open modal
     document.querySelectorAll('[data-modal]').forEach(trigger => {
-        trigger.addEventListener('click', function(e) {
+        trigger.addEventListener('click', function (e) {
             e.preventDefault();
             const modalId = this.dataset.modal;
             openModal(modalId);
         });
     });
-    
+
     // Close modal
     document.querySelectorAll('.modal-close, [data-dismiss="modal"]').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             closeModal(this.closest('.modal-overlay'));
         });
     });
-    
+
     // Close on overlay click
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
-        overlay.addEventListener('click', function(e) {
+        overlay.addEventListener('click', function (e) {
             if (e.target === this) {
                 closeModal(this);
             }
@@ -146,20 +146,20 @@ function closeModal(modalElement) {
 function initCostCenterPreview() {
     const productSelect = document.getElementById('productSelect');
     const previewContainer = document.getElementById('costCenterPreview');
-    
+
     if (!productSelect || !previewContainer) return;
-    
-    productSelect.addEventListener('change', async function() {
+
+    productSelect.addEventListener('change', async function () {
         const productId = this.value;
         if (!productId) {
             previewContainer.style.display = 'none';
             return;
         }
-        
+
         try {
             const response = await fetch(`/Furniture/api/cost_center_preview.php?product_id=${productId}`);
             const data = await response.json();
-            
+
             if (data.cost_center) {
                 previewContainer.innerHTML = `
                     <span class="preview-icon">💡</span>
@@ -189,11 +189,11 @@ function initCostCenterPreview() {
  */
 function initExportButtons() {
     document.querySelectorAll('[data-export]').forEach(btn => {
-        btn.addEventListener('click', function(e) {
+        btn.addEventListener('click', function (e) {
             e.preventDefault();
             const exportType = this.dataset.export;
             const filters = getCurrentFilters();
-            
+
             window.location.href = `/Furniture/api/export.php?type=${exportType}&${new URLSearchParams(filters).toString()}`;
         });
     });
@@ -205,11 +205,11 @@ function initExportButtons() {
 function getCurrentFilters() {
     const filters = {};
     const urlParams = new URLSearchParams(window.location.search);
-    
+
     for (const [key, value] of urlParams) {
         filters[key] = value;
     }
-    
+
     return filters;
 }
 
@@ -219,10 +219,10 @@ function getCurrentFilters() {
 function initSidebarToggle() {
     const toggleBtn = document.getElementById('sidebarToggle');
     const sidebar = document.querySelector('.sidebar');
-    
+
     if (!toggleBtn || !sidebar) return;
-    
-    toggleBtn.addEventListener('click', function() {
+
+    toggleBtn.addEventListener('click', function () {
         sidebar.classList.toggle('active');
     });
 }
@@ -237,7 +237,7 @@ function confirmDelete(message = 'Are you sure you want to delete this item?') {
 /**
  * Flash message auto-dismiss
  */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const flashMessages = document.querySelectorAll('.flash-message');
     flashMessages.forEach(msg => {
         setTimeout(() => {
@@ -256,16 +256,16 @@ let lineItemIndex = 0;
 function addLineItem() {
     const container = document.getElementById('lineItemsContainer');
     if (!container) return;
-    
+
     const template = document.getElementById('lineItemTemplate');
     if (!template) return;
-    
+
     const html = template.innerHTML.replace(/__INDEX__/g, lineItemIndex);
     const wrapper = document.createElement('div');
     wrapper.className = 'line-item';
     wrapper.innerHTML = html;
     container.appendChild(wrapper);
-    
+
     lineItemIndex++;
     updateTotals();
 }
@@ -282,7 +282,7 @@ function updateLineTotal(row) {
     const qty = parseFloat(row.querySelector('.line-qty').value) || 0;
     const price = parseFloat(row.querySelector('.line-price').value) || 0;
     const total = qty * price;
-    
+
     row.querySelector('.line-total').value = total.toFixed(2);
     updateTotals();
 }
@@ -290,16 +290,16 @@ function updateLineTotal(row) {
 function updateTotals() {
     const totals = document.querySelectorAll('.line-total');
     let grandTotal = 0;
-    
+
     totals.forEach(input => {
         grandTotal += parseFloat(input.value) || 0;
     });
-    
+
     const grandTotalEl = document.getElementById('grandTotal');
     if (grandTotalEl) {
         grandTotalEl.textContent = formatCurrency(grandTotal);
     }
-    
+
     const grandTotalInput = document.getElementById('grandTotalInput');
     if (grandTotalInput) {
         grandTotalInput.value = grandTotal.toFixed(2);
@@ -323,29 +323,41 @@ function initiatePayment(documentId, amount) {
     // Simulate Razorpay checkout
     const paymentModal = document.getElementById('paymentModal');
     if (!paymentModal) return;
-    
-    document.getElementById('paymentAmount').textContent = formatCurrency(amount);
-    document.getElementById('paymentDocId').value = documentId;
+
+    // Set values for the modal
+    const input = document.getElementById('payAmountInput');
+    if (input) {
+        input.value = parseFloat(amount).toFixed(2);
+        input.max = parseFloat(amount).toFixed(2); // Optional: warn if paying more
+    }
+
+    document.getElementById('payDocId').value = documentId;
     openModal('paymentModal');
 }
 
-function processPayment() {
+function processPayment(event) {
+    event.preventDefault(); // Prevent form submission
+
     const form = document.getElementById('paymentForm');
     if (!form) return;
-    
-    const docId = document.getElementById('paymentDocId').value;
-    const amount = document.getElementById('paymentAmountInput').value;
-    const method = document.getElementById('paymentMethod').value;
-    
+
+    const docId = document.getElementById('payDocId').value;
+    const amount = document.getElementById('payAmountInput').value;
+
+    if (!amount || parseFloat(amount) <= 0) {
+        showNotification('error', 'Please enter a valid amount');
+        return;
+    }
+
     // Simulate processing
     const btn = form.querySelector('button[type="submit"]');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Processing...';
-    
+
     setTimeout(() => {
         // Generate fake Razorpay ID
         const razorpayId = 'pay_' + Math.random().toString(36).substring(2, 15);
-        
+
         // Submit to server
         fetch('/Furniture/api/process_payment.php', {
             method: 'POST',
@@ -355,28 +367,29 @@ function processPayment() {
             body: JSON.stringify({
                 document_id: docId,
                 amount: amount,
-                method: method,
+                method: 'card',
                 razorpay_payment_id: razorpayId
             })
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                closeModal(paymentModal);
-                showNotification('success', 'Payment successful!');
-                setTimeout(() => location.reload(), 1500);
-            } else {
-                showNotification('error', data.message || 'Payment failed');
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const modal = document.getElementById('paymentModal');
+                    closeModal(modal);
+                    showNotification('success', 'Payment successful!');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification('error', data.message || 'Payment failed');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Pay Now';
+                }
+            })
+            .catch(error => {
+                console.error('Payment error:', error);
+                showNotification('error', 'Payment failed. Please try again.');
                 btn.disabled = false;
                 btn.innerHTML = 'Pay Now';
-            }
-        })
-        .catch(error => {
-            console.error('Payment error:', error);
-            showNotification('error', 'Payment failed. Please try again.');
-            btn.disabled = false;
-            btn.innerHTML = 'Pay Now';
-        });
+            });
     }, 2000);
 }
 
@@ -385,16 +398,16 @@ function processPayment() {
  */
 function showNotification(type, message) {
     const container = document.getElementById('notificationContainer') || createNotificationContainer();
-    
+
     const notification = document.createElement('div');
     notification.className = `flash-message ${type}`;
     notification.innerHTML = `
         <span>${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}</span>
         ${message}
     `;
-    
+
     container.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.style.opacity = '0';
         setTimeout(() => notification.remove(), 300);
@@ -415,7 +428,7 @@ function createNotificationContainer() {
 function initBudgetChart(canvasId, labels, budgetData, actualData) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
-    
+
     new Chart(ctx, {
         type: 'bar',
         data: {
@@ -467,7 +480,7 @@ function initBudgetChart(canvasId, labels, budgetData, actualData) {
 function initPieChart(canvasId, labels, data, colors) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
-    
+
     new Chart(ctx, {
         type: 'doughnut',
         data: {
