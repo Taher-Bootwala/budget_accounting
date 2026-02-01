@@ -1,0 +1,530 @@
+{
+    "users": [
+        {
+            "Field": "id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "PRI",
+            "Default": null,
+            "Extra": "auto_increment"
+        },
+        {
+            "Field": "name",
+            "Type": "varchar(100)",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "email",
+            "Type": "varchar(120)",
+            "Null": "NO",
+            "Key": "UNI",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "role",
+            "Type": "enum('admin','portal')",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "created_at",
+            "Type": "timestamp",
+            "Null": "NO",
+            "Key": "",
+            "Default": "current_timestamp()",
+            "Extra": ""
+        }
+    ],
+    "contacts": [
+        {
+            "Field": "id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "PRI",
+            "Default": null,
+            "Extra": "auto_increment"
+        },
+        {
+            "Field": "name",
+            "Type": "varchar(150)",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "type",
+            "Type": "enum('customer','vendor')",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "created_at",
+            "Type": "timestamp",
+            "Null": "NO",
+            "Key": "",
+            "Default": "current_timestamp()",
+            "Extra": ""
+        }
+    ],
+    "products": [
+        {
+            "Field": "id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "PRI",
+            "Default": null,
+            "Extra": "auto_increment"
+        },
+        {
+            "Field": "name",
+            "Type": "varchar(150)",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "category",
+            "Type": "varchar(100)",
+            "Null": "YES",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "price",
+            "Type": "decimal(14,2)",
+            "Null": "YES",
+            "Key": "",
+            "Default": "0.00",
+            "Extra": ""
+        },
+        {
+            "Field": "created_at",
+            "Type": "timestamp",
+            "Null": "NO",
+            "Key": "",
+            "Default": "current_timestamp()",
+            "Extra": ""
+        }
+    ],
+    "cost_centers": [
+        {
+            "Field": "id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "PRI",
+            "Default": null,
+            "Extra": "auto_increment"
+        },
+        {
+            "Field": "name",
+            "Type": "varchar(150)",
+            "Null": "NO",
+            "Key": "UNI",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "created_at",
+            "Type": "timestamp",
+            "Null": "NO",
+            "Key": "",
+            "Default": "current_timestamp()",
+            "Extra": ""
+        }
+    ],
+    "auto_analytical_rules": [
+        {
+            "Field": "id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "PRI",
+            "Default": null,
+            "Extra": "auto_increment"
+        },
+        {
+            "Field": "rule_type",
+            "Type": "enum('product','category')",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "rule_value",
+            "Type": "varchar(150)",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "cost_center_id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "created_at",
+            "Type": "timestamp",
+            "Null": "NO",
+            "Key": "",
+            "Default": "current_timestamp()",
+            "Extra": ""
+        }
+    ],
+    "budgets": [
+        {
+            "Field": "id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "PRI",
+            "Default": null,
+            "Extra": "auto_increment"
+        },
+        {
+            "Field": "cost_center_id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "amount",
+            "Type": "decimal(14,2)",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "start_date",
+            "Type": "date",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "end_date",
+            "Type": "date",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "status",
+            "Type": "enum('active','revised','closed')",
+            "Null": "YES",
+            "Key": "",
+            "Default": "active",
+            "Extra": ""
+        },
+        {
+            "Field": "created_at",
+            "Type": "timestamp",
+            "Null": "NO",
+            "Key": "",
+            "Default": "current_timestamp()",
+            "Extra": ""
+        }
+    ],
+    "budget_revisions": [
+        {
+            "Field": "id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "PRI",
+            "Default": null,
+            "Extra": "auto_increment"
+        },
+        {
+            "Field": "budget_id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "old_amount",
+            "Type": "decimal(14,2)",
+            "Null": "YES",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "new_amount",
+            "Type": "decimal(14,2)",
+            "Null": "YES",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "revised_at",
+            "Type": "timestamp",
+            "Null": "NO",
+            "Key": "",
+            "Default": "current_timestamp()",
+            "Extra": ""
+        }
+    ],
+    "documents": [
+        {
+            "Field": "id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "PRI",
+            "Default": null,
+            "Extra": "auto_increment"
+        },
+        {
+            "Field": "doc_type",
+            "Type": "enum('PO','SO','VendorBill','CustomerInvoice')",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "contact_id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "cost_center_id",
+            "Type": "int(11)",
+            "Null": "YES",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "total_amount",
+            "Type": "decimal(14,2)",
+            "Null": "YES",
+            "Key": "",
+            "Default": "0.00",
+            "Extra": ""
+        },
+        {
+            "Field": "status",
+            "Type": "enum('draft','posted','cancelled')",
+            "Null": "YES",
+            "Key": "",
+            "Default": "draft",
+            "Extra": ""
+        },
+        {
+            "Field": "created_at",
+            "Type": "timestamp",
+            "Null": "NO",
+            "Key": "",
+            "Default": "current_timestamp()",
+            "Extra": ""
+        }
+    ],
+    "document_lines": [
+        {
+            "Field": "id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "PRI",
+            "Default": null,
+            "Extra": "auto_increment"
+        },
+        {
+            "Field": "document_id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "product_id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "quantity",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "price",
+            "Type": "decimal(14,2)",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "line_total",
+            "Type": "decimal(14,2)",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        }
+    ],
+    "transactions": [
+        {
+            "Field": "id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "PRI",
+            "Default": null,
+            "Extra": "auto_increment"
+        },
+        {
+            "Field": "document_id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "cost_center_id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "amount",
+            "Type": "decimal(14,2)",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "transaction_date",
+            "Type": "date",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "created_at",
+            "Type": "timestamp",
+            "Null": "NO",
+            "Key": "",
+            "Default": "current_timestamp()",
+            "Extra": ""
+        }
+    ],
+    "payments": [
+        {
+            "Field": "id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "PRI",
+            "Default": null,
+            "Extra": "auto_increment"
+        },
+        {
+            "Field": "document_id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "paid_amount",
+            "Type": "decimal(14,2)",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "payment_method",
+            "Type": "varchar(50)",
+            "Null": "YES",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "razorpay_payment_id",
+            "Type": "varchar(120)",
+            "Null": "YES",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "payment_date",
+            "Type": "date",
+            "Null": "NO",
+            "Key": "",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "created_at",
+            "Type": "timestamp",
+            "Null": "NO",
+            "Key": "",
+            "Default": "current_timestamp()",
+            "Extra": ""
+        }
+    ],
+    "portal_access": [
+        {
+            "Field": "id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "PRI",
+            "Default": null,
+            "Extra": "auto_increment"
+        },
+        {
+            "Field": "user_id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        },
+        {
+            "Field": "contact_id",
+            "Type": "int(11)",
+            "Null": "NO",
+            "Key": "MUL",
+            "Default": null,
+            "Extra": ""
+        }
+    ]
+}
